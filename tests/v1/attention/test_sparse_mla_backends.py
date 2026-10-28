@@ -2168,8 +2168,6 @@ def test_sparse_mla_index_groups_own_distinct_physical_buffers():
 def test_hisparse_index_group_preserves_row_width(
     monkeypatch, kv_cache_dtype, row_width, kv_dtype
 ):
-    monkeypatch.setattr(index_group_module, "_create_side_stream", MagicMock())
-    monkeypatch.setattr(index_group_module, "_create_event", MagicMock())
     create_handle = MagicMock(side_effect=lambda *args, **kwargs: SimpleNamespace())
     monkeypatch.setattr(
         index_group_module, "create_hisparse_cache_handle", create_handle
@@ -3677,7 +3675,9 @@ def test_hisparse_gather_prefill_cache_prefers_resident_rows(row_width, kv_dtype
         device=device,
     )
 
-    runtime = _make_hisparse_runtime(row_width=row_width, block_size=block_size)
+    runtime = _make_hisparse_runtime(
+        row_width=row_width, block_size=block_size, kv_dtype=kv_dtype
+    )
     runtime.bind_source_cache(host_cache)
     staged = runtime.gather_prefill_cache(
         host_cache, plan, resident_cache=resident_cache
